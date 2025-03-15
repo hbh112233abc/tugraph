@@ -1,4 +1,5 @@
 .env
+/.vscode
 /vendor
 composer.lock
 /log

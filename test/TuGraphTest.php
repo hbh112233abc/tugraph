@@ -37,7 +37,7 @@ class TuGraphTest extends Base
         $this->assertIsArray($res);
     }
 
-    public function testAll($g = '变更')
+    public function testAll($g = '责任关系')
     {
         $res = static::$tu->graph($g)->all();
         $this->dump($res);

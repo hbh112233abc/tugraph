@@ -222,14 +222,14 @@ class TuGraph
                         break;
                     case 2: //边
                         $r = json_decode($item, true);
-                        $edges[$r['identity']] = $r;
+                        $edges[] = $r;
                         break;
                     // case 4: //路径
                     default:
                         $p = json_decode($item, true);
                         foreach ($p as $d) {
                             if (isset($d['src']) && isset($d['dst'])) {
-                                $edges[$d['identity']] = $d;
+                                $edges[] = $d;
                             } else {
                                 $nodes[$d['identity']] = $d;
                             }
