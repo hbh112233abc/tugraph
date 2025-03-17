@@ -4,12 +4,13 @@ namespace bingher\tugraph;
 use Exception;
 use GuzzleHttp\Client;
 use WikibaseSolutions\CypherDSL\Query;
+use WikibaseSolutions\CypherDSL\Patterns\Node;
 use function WikibaseSolutions\CypherDSL\node;
+use function WikibaseSolutions\CypherDSL\query;
 use function WikibaseSolutions\CypherDSL\relationship;
 use function WikibaseSolutions\CypherDSL\relationshipFrom;
 use function WikibaseSolutions\CypherDSL\relationshipTo;
 
-use WikibaseSolutions\CypherDSL\Patterns\Node;
 
 class TuGraph
 {
@@ -44,7 +45,7 @@ class TuGraph
      * 查询构建器
      * @var Query
      */
-    protected $query;
+    protected $q;
 
     /**
      * 查询结果数据
@@ -64,7 +65,7 @@ class TuGraph
         );
         $this->graph  = $this->config['graph'];
         $this->login();
-        $this->query = new Query();
+        $this->q = new Query();
     }
 
     function __destruct()
@@ -134,6 +135,15 @@ class TuGraph
         return node($label);
     }
 
+    /**
+     * 生成查询
+     * @return Query
+     */
+    static public function query()
+    {
+        return query();
+    }
+
     static public function link(array $types = [])
     {
         return relationship()->withTypes($types);
@@ -153,7 +163,7 @@ class TuGraph
      */
     public function sql(): string
     {
-        return $this->query->build();
+        return $this->q->build();
     }
 
     /**
@@ -164,7 +174,7 @@ class TuGraph
     public function call(string $sql = ''): array
     {
         if (empty($sql)) {
-            $sql = $this->query->build();
+            $sql = $this->q->build();
         }
         $api        = '/cypher';
         $params     = [
@@ -301,8 +311,8 @@ class TuGraph
         }
 
         // 检查Query对象里是否有对应的方法
-        if (method_exists($this->query, $method)) {
-            call_user_func_array([$this->query, $method], $args);
+        if (method_exists($this->q, $method)) {
+            call_user_func_array([$this->q, $method], $args);
             return $this;
         }
 
