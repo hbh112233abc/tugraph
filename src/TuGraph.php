@@ -176,7 +176,7 @@ class TuGraph
         if (empty($sql)) {
             $sql = $this->q->build();
         }
-        print_r($sql);
+        // print_r($sql);
         $api        = '/cypher';
         $params     = [
             'script' => $sql,

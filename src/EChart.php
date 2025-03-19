@@ -35,7 +35,7 @@ class EChart
     {
         if (!empty($data['nodes'])) {
             foreach ($data['nodes'] as $node) {
-                $this->nodes[] = $this->node($node);
+                $this->nodes[$node['identity']] = $this->node($node);
             }
         }
         if (!empty($data['edges'])) {
@@ -85,9 +85,8 @@ class EChart
             }
         }
 
-        foreach ($tree as $t) {
+        foreach ($tree as &$t) {
             $t = $this->findChildren($t, $nodeMap);
-            halt($t);
         }
 
         return $tree;
@@ -112,8 +111,11 @@ class EChart
     protected function tree()
     {
         foreach ($this->links as $link) {
-            $dstId                      = $link['target'];
-            $srcId                      = $link['source'];
+            $dstId = $link['target'];
+            $srcId = $link['source'];
+            if (empty($this->nodes[$dstId])) {
+                continue;
+            }
             $this->nodes[$dstId]['pid'] = $srcId;
         }
         $res = $this->buildTree(array_values($this->nodes));

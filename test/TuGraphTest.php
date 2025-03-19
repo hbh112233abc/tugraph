@@ -76,4 +76,14 @@ class TuGraphTest extends Base
         $res = static::$tu->call();
         var_dump($res);
     }
+
+    public function testTree()
+    {
+        $sql = "MATCH p=(n0:项目)-[*1..3]-(n1:分类) RETURN p";
+        static::$tu->graph('材料')->call($sql);
+        $res = static::$tu->eChart('tree');
+        var_dump($res);
+        $this->assertIsArray($res);
+        $this->assertCount(1, $res);
+    }
 }
