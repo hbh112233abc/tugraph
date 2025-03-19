@@ -1,5 +1,6 @@
 .env
 /.vscode
+/demo
 /vendor
 composer.lock
 /log

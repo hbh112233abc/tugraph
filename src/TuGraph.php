@@ -176,6 +176,7 @@ class TuGraph
         if (empty($sql)) {
             $sql = $this->q->build();
         }
+        print_r($sql);
         $api        = '/cypher';
         $params     = [
             'script' => $sql,
@@ -191,13 +192,11 @@ class TuGraph
      * @param array $data
      * @return array{categories: array, links: array, nodes: array}
      */
-    public function eChart(array $data = [])
+    public function eChart(string $type = 'graph')
     {
-        if (empty($data)) {
-            $data = $this->result();
-        }
-        $ec = new EChart($data);
-        return $ec->result();
+        $data = $this->result();
+        $ec   = new EChart($data);
+        return $ec->result($type);
     }
 
     /**

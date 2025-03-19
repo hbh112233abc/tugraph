@@ -59,13 +59,82 @@ class EChart
         return $res;
     }
 
-    public function result()
+    /**
+     * 根据节点列表构建树形结构
+     * @param array $nodes 包含 id、pid 和 name 的节点列表
+     * @return array 树形结构的节点列表
+     */
+    protected function buildTree(array $nodes)
     {
-        $res = [
-            'categories' => $this->fmtCategories(),
-            'nodes'      => $this->nodes,
-            'links'      => $this->links,
-        ];
+        $tree    = [];
+        $nodeMap = [];
+
+        // 首先将所有节点存储在一个关联数组中，键为节点的 id
+        foreach ($nodes as $node) {
+            $nodeMap[$node['identity']]             = $node;
+            $nodeMap[$node['identity']]['children'] = [];
+        }
+
+        // 遍历节点列表，先取出根节点
+        foreach ($nodes as $node) {
+            $pid = $node['pid'] ?? null;
+            if ($pid === null) {
+                // 如果节点没有父节点，将其添加到树的根节点
+                $tree[] = $nodeMap[$node['identity']];
+                unset($nodeMap[$node['identity']]);
+            }
+        }
+
+        foreach ($tree as $t) {
+            $t = $this->findChildren($t, $nodeMap);
+            halt($t);
+        }
+
+        return $tree;
+    }
+
+    protected function findChildren(&$node, $nodeMap)
+    {
+        $children = [];
+        foreach ($nodeMap as $id => $nm) {
+            if ($nm['pid'] == $node['identity']) {
+                $children[] = $nm;
+                unset($nodeMap[$id]);
+            }
+        }
+        foreach ($children as &$child) {
+            $child['children'] = $this->findChildren($child, $nodeMap);
+        }
+        $node['children'] = $children;
+        return $node;
+    }
+
+    protected function tree()
+    {
+        foreach ($this->links as $link) {
+            $dstId                      = $link['target'];
+            $srcId                      = $link['source'];
+            $this->nodes[$dstId]['pid'] = $srcId;
+        }
+        $res = $this->buildTree(array_values($this->nodes));
+        return $res;
+    }
+
+    public function result($type = 'graph')
+    {
+        switch ($type) {
+            case 'graph':
+                $res = [
+                    'categories' => $this->fmtCategories(),
+                    'nodes'      => array_values($this->nodes),
+                    'links'      => $this->links,
+                ];
+                break;
+            case 'tree':
+                $res = $this->tree();
+                break;
+
+        }
         return $res;
     }
 
