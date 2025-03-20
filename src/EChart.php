@@ -102,7 +102,7 @@ class EChart
             }
         }
         foreach ($children as &$child) {
-            $child['children'] = $this->findChildren($child, $nodeMap);
+            $this->findChildren($child, $nodeMap);
         }
         $node['children'] = $children;
         return $node;
