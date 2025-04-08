@@ -53,6 +53,12 @@ class TuGraph
      */
     protected $data = [];
 
+    /**
+     * 是否调试模式
+     * @var boolean
+     */
+    protected $debugFlag = false;
+
     function __construct($config = [])
     {
         $this->config = array_merge($this->config, $config);
@@ -66,6 +72,12 @@ class TuGraph
         $this->graph  = $this->config['graph'];
         $this->login();
         $this->q = new Query();
+    }
+
+    public function debug($flag = true)
+    {
+        $this->debugFlag = $flag;
+        return $this;
     }
 
     function __destruct()
@@ -169,14 +181,17 @@ class TuGraph
     /**
      * 调用cypher语句
      * @param mixed $sql
-     * @return array|array{elapsed:float, header: array{array{name:string,type:int}}, results: array{array}}
+     * @return array|array{elapsed:float, header: array{array{name:string,type:int}}, result: array{array}}
      */
     public function call(string $sql = ''): array
     {
         if (empty($sql)) {
             $sql = $this->q->build();
         }
-        // print_r($sql);
+        if ($this->debugFlag) {
+            print_r($sql);
+            print_r("\n");
+        }
         $api        = '/cypher';
         $params     = [
             'script' => $sql,
@@ -200,6 +215,23 @@ class TuGraph
     }
 
     /**
+     * 生成边的键名
+     * @param array $r
+     * @return string
+     */
+    protected static function edgeKey(array $r)
+    {
+        $k = sprintf(
+            "%s-%s%s%s",
+            $r['src'],
+            $r['label'],
+            $r['forward'] ? '->' : '-',
+            $r['dst'],
+        );
+        return $k;
+    }
+
+    /**
      * 组装结果数据
      * @param array $data
      * @return array[]|array{edges: array, nodes: array, table: array}
@@ -216,6 +248,7 @@ class TuGraph
         ];
         $nodes  = [];
         $edges  = [];
+        $rows   = [];
         $header = $data['header'];
         foreach ($data['result'] as $items) {
             $row = [];
@@ -231,14 +264,20 @@ class TuGraph
                         break;
                     case 2: //边
                         $r = json_decode($item, true);
-                        $edges[] = $r;
+                        $k = static::edgeKey($r);
+                        if (!isset($edges[$k])) {
+                            $edges[$k] = $r;
+                        }
                         break;
                     // case 4: //路径
                     default:
                         $p = json_decode($item, true);
                         foreach ($p as $d) {
                             if (isset($d['src']) && isset($d['dst'])) {
-                                $edges[] = $d;
+                                $k = static::edgeKey($d);
+                                if (!isset($edges[$k])) {
+                                    $edges[] = $d;
+                                }
                             } else {
                                 $nodes[$d['identity']] = $d;
                             }
@@ -248,11 +287,15 @@ class TuGraph
                 }
             }
             if (!empty($row)) {
-                $result['table'][] = $row;
+                $k = serialize($row);
+                if (!isset($rows[$k])) {
+                    $rows[$k] = $row;
+                }
             }
         }
         $result['nodes'] = array_values($nodes);
         $result['edges'] = array_values($edges);
+        $result['table'] = array_values($rows);
         return $result;
     }
 

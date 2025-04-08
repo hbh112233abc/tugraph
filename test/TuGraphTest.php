@@ -31,7 +31,7 @@ class TuGraphTest extends Base
     public function testCall()
     {
         $res = static::$tu->graph('三国')->call('match (n)-[r:参战]->(m) return n.name as person,m.start_time,r');
-        var_dump($res);
+        // var_dump($res);
         $res = static::$tu->result($res);
         var_dump($res);
         $this->assertIsArray($res);
@@ -86,4 +86,5 @@ class TuGraphTest extends Base
         $this->assertIsArray($res);
         $this->assertCount(1, $res);
     }
+
 }
