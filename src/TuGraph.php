@@ -276,7 +276,7 @@ class TuGraph
                             if (isset($d['src']) && isset($d['dst'])) {
                                 $k = static::edgeKey($d);
                                 if (!isset($edges[$k])) {
-                                    $edges[] = $d;
+                                    $edges[$k] = $d;
                                 }
                             } else {
                                 $nodes[$d['identity']] = $d;
